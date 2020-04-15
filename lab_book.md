@@ -19,5 +19,12 @@ Final project lab book
 ### Entry 1: 2020-04-15, Wednesday.   
 # Starting indexing and mapping
 
+Step 0: Building index for reduced reference:
+
+bowtie2-build referenceSeqs/Pabies1.0-genome_reduced.fa Pabies1.0-genome_reduced
+
+Step 1: Mapping to reduced reference with Tophat
+
+Step 2: Using ANGSD to create vcf file for SNPs from exomic bam file
 
 ------    
