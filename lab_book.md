@@ -160,6 +160,7 @@ not sure if this is useful on top of the per site Fst measures
 
 ``````
 realSFS saf2theta test03_allsites.saf.idx -sfs test03_allsites.sfs -outname test03_pernuc
+thetaStat print test03_pernuc.thetas.idx > CW_pernuc.txt 2> /dev/null # to enable grepping specific chromosomes
 ``````
 saf file is the output of step 6, and sfs is the output of the first part of step 7
 still working on r script to visualise this
