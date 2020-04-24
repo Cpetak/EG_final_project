@@ -23,17 +23,38 @@ These are all the steps we took / are planning to take. Order doesn't always mat
 
 bowtie2-build referenceSeqs/Pabies1.0-genome_reduced.fa Pabies1.0-genome_reduced
 
-Step 1: Mapping transcriptomic data to reduced reference with Tophat
+#### Step 1: Mapping transcriptomic data to reduced reference with Tophat
 
-Step 2: Using samtools to create vcf
+#### Step 2: Using samtools to create vcf
 
-Step 3: Installing SNPeff
+#### Step 3: Installing SNPeff (we are no longer doing this)
 
-Step 4. Analysing phenotypic data in R using ANOVA and ggplot
+#### Step 4. Analysing phenotypic data in R using ANOVA and ggplot
 
-Step 5. Using bioclim data to find more pops in HD and CW
+R script in the phenotypic_data folder in this repo
 
-Step 6. Creating genotype likelihood for all individuals in CW and all individuals in HD
+#### Step 5. Using bioclim data to find more pops in HD and CW
+
+txt file in repo, "RS_Exome_bioclim.txt"
+
+``````
+#reading in bioclim data
+bioclim <- read.table(file="RS_Exome_bioclim.txt", header=TRUE)
+boxplot(bio1_13~Pop, data=bioclim)
+boxplot(bio12_13~Pop, data=bioclim, col="blue")
+
+
+#HotDry (5 fams): ASC_06, BRU_05, ESC_01, XBM_07, NOR_02
+#CoolWet (5 fams): CAM_02, JAY_02, KAN_04, LOL_02, MMF_13
+
+library(ggplot2)
+
+ggplot(bioclim, aes(x=bio12_13, y=bio1_13)) + 
+  geom_point(aes(color=Pop), show.legend = FALSE) +
+  geom_text(label=bioclim$Pop)
+``````
+
+#### Step 6. Creating genotype likelihood for all individuals in CW and all individuals in HD
 
 /data/project_data/GroupProjects/UTR/ANGSD_GL
 
@@ -75,7 +96,7 @@ ANGSD -b /data/project_data/GroupProjects/UTR/ANGSD_GL/HD_bamlist.list \
 
 ``````
 
-Step 7. Comparing global nucleotide diversities between CW and HD
+#### Step 7. Comparing global nucleotide diversities between CW and HD
 
 One of the outputs of the previous script is then used for "realSFS" as below:
 ``````
@@ -115,8 +136,9 @@ ANGSD -b /data/project_data/GroupProjects/UTR/ANGSD_GL/test2list.list \
 
 thetaStat do_stat ${output}/test03_allsites.thetas.idx
 ``````
+Still working or R script to visualise SFS
 
-Step 8. Getting global Fst between CW and HD
+#### Step 8. Getting global (sliding window?) Fst between CW and HD
 
 ``````
 #!/bin/bash
@@ -128,17 +150,23 @@ realSFS fst index ${output}/test01_allsites.saf.idx ${output}/test02_allsites.sa
 realSFS fst print ${output}/test01_test02_allsites.fst.idx > ${output}/test01_test02_allsites.fst
 ``````
 replace test01 with HD, test02 with CW
+not sure if this is useful on top of the per site Fst measures
 
+#### Step 9. Identifying UTRs
 
-Step 9. Identifying UTRs
+#### Step 10. Getting Fst values for single SNPs
 
-Step 10. Getting Fst values for single SNPs
+#### Step 11. Getting per base nucleotide diversities
 
-Step 11. Getting per base nuvleotide diversities
+``````
+realSFS saf2theta test03_allsites.saf.idx -sfs test03_allsites.sfs -outname test03_pernuc
+``````
+saf file is the output of step 6, and sfs is the output of the first part of step 7
+still working on r script to visualise this
 
-Step 12. Check for functional enrichment for high Fst SNPs
+#### Step 12. Check for functional enrichment for high Fst SNPs
 
-Step 13. Testing for selection at the per-SNP level using PCAngsd
+#### Step 13. Testing for selection at the per-SNP level using PCAngsd
 
 
 ------    
