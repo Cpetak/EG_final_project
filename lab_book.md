@@ -19,7 +19,7 @@ Final project lab book
 ### Entry 1: 2020-04-15, Wednesday.   
 These are all the steps we took / are planning to take. Order doesn't always matter.
 
-####Step 0: Building index for reduced reference
+#### Step 0: Building index for reduced reference
 
 bowtie2-build referenceSeqs/Pabies1.0-genome_reduced.fa Pabies1.0-genome_reduced
 
