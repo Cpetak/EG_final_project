@@ -169,5 +169,6 @@ still working on r script to visualise this
 
 #### Step 13. Testing for selection at the per-SNP level using PCAngsd
 
+(getting files: scp cpetak@pbio381.uvm.edu:/data/project_data/GroupProjects/UTR/EG_final_project/test_chr.txt .)
 
 ------    
