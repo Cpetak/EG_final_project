@@ -24,8 +24,49 @@ These are all the steps we took / are planning to take. Order doesn't always mat
 bowtie2-build referenceSeqs/Pabies1.0-genome_reduced.fa Pabies1.0-genome_reduced
 
 #### Step 1: Mapping transcriptomic data to reduced reference with Tophat
+```
+# test tophat command with just one fastq file 
+# using --transcriptome-index so I can drop -G in the future
+# note I already did ASC_06_C_0_GAGTCC_R1 as well 
 
+tophat2 -G /data/project_data/GroupProjects/UTR/annotations/Pabies01-gene.gff3 --transcriptome-index /data/project_data/GroupProjects/UTR/annotations/reducedRefTopHat --num-threads 3 -o /data/project_data/GroupProjects/UTR/thRNAseqBams/ASC_06_C_10_ACGTCT_R1 Pabies1.0-genome_reduced /data/project_data/RS_RNASeq/fastq/cleanreads/ASC_06_C_10_ACGTCT_R1.cl.fq 
+
+# map all 76 fastq files with  2 scripts (saved in this repo)
+
+cd referenceSeqs/
+
+bash ../mapBatchTH.sh
+bash ../indexBamsTH.sh
+
+# merge BAM files
+
+cd /data/project_data/GroupProjects/UTR
+
+samtools merge -b RNAbamPaths merged_RNA.bam
+```
 #### Step 2: Using samtools to create vcf
+
+```
+cd /data/project_data/GroupProjects/UTR
+
+# need list of just the BAMs we want for the full analysis 
+
+tail -n +2 HD_CW_extended_list.txt | cut -f1 > ourExomeIDs
+
+find /data/project_data/RS_ExomeSeq/mapping/all/ | grep -f ourExomeIDs | grep -v '.bai$' > ourExomePaths 
+
+# make vcf for all these BAMs
+
+bcftools mpileup --max-depth 1000 -Ou --threads 3 -f /data/project_data/GroupProjects/UTR/referenceSeqs/Pabies1.0-genome_reduced.fa -b /data/project_data/GroupProjects/UTR/ourExomePaths | bcftools call -v -m -Ob -o /data/project_data/GroupProjects/UTR/VCFs/CW_HD_SNPs.bcf
+
+# filter for call quality and convert to vcf 
+bcftools view -i '%QUAL>=20' -O z -o VCFs/filtered_CW_HD_SNPs.vcf.gz VCFs/CW_HD_SNPs.bcf
+
+# give it col names
+cut -f7 -d'/' ourExomePaths | cut -f1 -d'.'  > HDCWsampleNames
+
+bcftools reheader -s HDCWsampleNames -o VCFs/shortName_filtered_CW_HD_SNPs.vcf.gz VCFs/filtered_CW_HD_SNPs.vcf.gz
+```
 
 #### Step 3: Installing SNPeff (we are no longer doing this)
 
@@ -154,7 +195,47 @@ not sure if this is useful on top of the per site Fst measures
 
 #### Step 9. Identifying UTRs
 
+```
+# just pull every CDS out of the gff, turn it into bed and the do bedtools subtract against the reference bed
+# in hindsight, did not need to make it a bed file bc bedtools accepts gff
+
+fgrep 'CDS' annotations/Pabies01-gene.gff3 | awk '{print $1, $4, $5}' | sed 's/ /\t/g' > annotations/all_CDS.bed
+
+# remove these from the reference bed
+/data/popgen/bedtools2/bin/bedtools subtract -a annotations/reducedFull.bed -b annotations/all_CDS.bed > annotations/noCDS_reduced.bed
+
+# use samtools depth with this bed file and the merged bam to see where reads align to hypothetical UTRs
+
+samtools depth -b annotations/noCDS_reduced.bed merged_RNA.bam  > final_RNAbamDepth
+
+# filter out low depth bases 
+egrep -v -w '0|1|2|3' final_RNAbamDepth | sed -r 's/[[:space:]]/,/g' > final_RNAbamDepth.csv 
+
+# see R script in this repo for processing of final_RNAbamDepth.csv
+
+```
+
 #### Step 10. Getting Fst values for single SNPs
+
+```
+
+# need a list of the CW and HD individuals 
+fgrep -w 'CW' HD_CW_extended_list.txt | cut -f1 > CWpops
+fgrep -w 'HD' HD_CW_extended_list.txt | cut -f1 > HDpops
+
+grep -f CWpops HDCWsampleNames > CWinds.txt
+grep -f HDpops HDCWsampleNames > HDinds.txt
+
+zcat VCFs/shortName_filtered_CW_HD_SNPs.vcf.gz | vcftools --vcf - --weir-fst-pop HDinds.txt --weir-fst-pop CWinds.txt --out perSiteFST/HD_vs_CW_perSite_Fst
+
+# this gives me a calculation of FST for all 15,299,959 SNPs 
+
+# filtering out zero fst
+fgrep -v "-" perSiteFST/HD_vs_CW_perSite_Fst.weir.fst | egrep -v -w '$0' > perSiteFST/filtered_HD_vs_CW_perSite_Fst.weir.fst
+
+# this cuts it down to 4,569,451
+
+```
 
 #### Step 11. Getting per base nucleotide diversities
 
