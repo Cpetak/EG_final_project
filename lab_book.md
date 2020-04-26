@@ -197,12 +197,12 @@ not sure if this is useful on top of the per site Fst measures
 
 ```
 # just pull every CDS out of the gff, turn it into bed and the do bedtools subtract against the reference bed
-# in hindsight, did not need to make it a bed file bc bedtools accepts gff
 
-fgrep 'CDS' annotations/Pabies01-gene.gff3 | awk '{print $1, $4, $5}' | sed 's/ /\t/g' > annotations/all_CDS.bed
+fgrep 'CDS' annotations/Pabies01-gene.gff3 > annotations/all_CDS.gff3
 
 # remove these from the reference bed
-/data/popgen/bedtools2/bin/bedtools subtract -a annotations/reducedFull.bed -b annotations/all_CDS.bed > annotations/noCDS_reduced.bed
+
+/data/popgen/bedtools2/bin/bedtools subtract -a annotations/reducedFull.bed -b annotations/all_CDS.gff3 > annotations/noCDS_reduced.bed
 
 # use samtools depth with this bed file and the merged bam to see where reads align to hypothetical UTRs
 
