@@ -177,7 +177,33 @@ ANGSD -b /data/project_data/GroupProjects/UTR/ANGSD_GL/test2list.list \
 
 thetaStat do_stat ${output}/test03_allsites.thetas.idx
 ``````
-Still working or R script to visualise SFS
+R script to visualise SFS
+
+``````
+SFS <- scan("HD_allsites.sfs")
+sumSFS <- sum(SFS)
+pctPoly = 100*(1-(SFS[1]/sumSFS))
+plotSFS <- SFS[2:length(SFS)]
+barplot(plotSFS, xlab="CW Pop SFS")
+
+div <- read.table("HD_allsites.thetas.idx.pestPG")
+colnames(div)=c("window","chrome","wincenter","tW","tP","tF","tH","tL","tajD","fulif","fuliD","fayH","zengsE","numSites")
+div$tWpersite = div$tW/div$numSites
+div$tPpersite = div$tP/div$numSites
+pdf("XWS_diversity_stats2.pdf")
+par(mfrow=c(2,2))
+
+hist(div$tWpersite,col="darkorchid",xlab="Theta_W",main="")
+hist(div$tPpersite,col="darkorchid", xlab="Theta-Pi",main="")
+hist(div$tajD,col="darkorchid",xlab="Tajima's D",main="")
+
+summary(div)
+
+barplot(plotSFS, main="SFS", xlab= "Derived allele frequency", ylab="Number of sites")
+dev.off()
+
+plot(div$tajD)
+``````
 
 #### Step 8. Getting global (sliding window?) Fst between CW and HD
 
