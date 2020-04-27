@@ -140,7 +140,12 @@ ANGSD -b /data/project_data/GroupProjects/UTR/ANGSD_GL/HD_bamlist.list \
 getting only polymorphic sites from mafs output
 
 ``````
-awk '{if($7<0.000001)print}' <CW_allsites.mafs > test_awk.txt
+zcat HD_allsites.mafs.gz > HD_allsites.mafs
+awk '{if($7<0.000001)print}' <HD_allsites.mafs > test_awk_HD.txt
+cat test_awk_HD.txt test_awk_CW.txt > both_poly.txt
+sort -k1 -k2 both_poly.txt
+uniq -d both_poly.txt #returns only duplicates
+wc -l #gives us number of duplicates -> the ones that were polymorphic in both
 ``````
 
 #### Step 7. Comparing global nucleotide diversities between CW and HD
