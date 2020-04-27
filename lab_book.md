@@ -137,6 +137,12 @@ ANGSD -b /data/project_data/GroupProjects/UTR/ANGSD_GL/HD_bamlist.list \
 
 ``````
 
+getting only polymorphic sites from mafs output
+
+``````
+awk '{if($7<0.000001)print}' <CW_allsites.mafs > test_awk.txt
+``````
+
 #### Step 7. Comparing global nucleotide diversities between CW and HD
 
 One of the outputs of the previous script is then used for "realSFS" as below:
