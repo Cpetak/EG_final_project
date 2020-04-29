@@ -148,6 +148,25 @@ uniq -d both_poly.txt #returns only duplicates
 wc -l #gives us number of duplicates -> the ones that were polymorphic in both
 ``````
 
+GL without filtering to get higher resultion per-site nucleotide diversity later on.
+``````
+#!/bin/bash
+
+REF="/data/project_data/RS_ExomeSeq/ReferenceGenomes/Pabies1.0-genome_reduced.fa"
+output="/data/project_data/GroupProjects/UTR/ANGSD_correct/no_fill"
+
+# Estimating GL's and allele frequencies for all sites with ANGSD
+
+ANGSD -b /data/project_data/GroupProjects/UTR/ANGSD_correct/CW_bamlist.list \
+-ref ${REF} -anc ${REF} \
+-out ${output}/CW_allsites \
+-nThreads 2 \
+-GL 1 \
+-doSaf 1 \
+-fold 1 \
+-sites /data/project_data/GroupProjects/UTR/regions_totestG.csv #this allows us to run ANGSD only on specific regions to make it faster. you first have to create a file with the desired locations, format specified here http://www.popgen.dk/angsd/index.php/Sites, then run "angsd sites index your.file", and then refer to this file like I did above when running angsd.
+``````
+
 #### Step 7. Comparing global nucleotide diversities between CW and HD
 
 One of the outputs of the previous script is then used for "realSFS" as below:
@@ -276,12 +295,18 @@ fgrep -v "-" perSiteFST/HD_vs_CW_perSite_Fst.weir.fst | egrep -v -w '$0' > perSi
 
 #### Step 11. Getting per base nucleotide diversities
 
+this was done with the no filter GL outputs
 ``````
 realSFS saf2theta test03_allsites.saf.idx -sfs test03_allsites.sfs -outname test03_pernuc
 thetaStat print test03_pernuc.thetas.idx > CW_pernuc.txt 2> /dev/null # to enable grepping specific chromosomes
 ``````
-saf file is the output of step 6, and sfs is the output of the first part of step 7
-still working on r script to visualise this
+saf file is the output of step 6, and sfs is the output of the first part of step 7 \
+after visualising this I realised that this is horrible to look at -> thus I used a sliding window approach instead: \
+window length of 100 sites, and step size of 25 sites 
+``````
+thetaStat do_stat out.thetas.idx -win 100 -step 25  -outnames theta.thetasWindow.gz
+``````
+out.thetas.idx was the output of the per-site analysis, "saf2theta"
 
 #### Step 12. Check for functional enrichment for high Fst SNPs
 
