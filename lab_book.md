@@ -8,15 +8,11 @@
 Final project lab book
 
 
-# Table of Contents:   
-* [Entry 1: 2020-04-15, Wednesday](#id-section1)
-
-
 ------    
-<div id='id-section1'/>   
+  
 
 
-### Entry 1: 2020-04-15, Wednesday.   
+### Methods.   
 These are all the steps we took / are planning to take. Order doesn't always matter.
 
 #### Step 0: Building index for reduced reference
