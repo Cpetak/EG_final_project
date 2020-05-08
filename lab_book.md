@@ -327,7 +327,89 @@ thetaStat do_stat out.thetas.idx -win 100 -step 25  -outnames theta.thetasWindow
 ``````
 out.thetas.idx was the output of the per-site analysis, "saf2theta"
 
+R script for visualisation:
+``````
+library(ggplot2)
+
+data <- read.table(file= "HD_pernuc.txt", header = FALSE)
+colnames(data) <- c("Chromo",	"Pos",	"Watterson",	"Pairwise",	"thetaSingleton",	"thetaH",	"thetaL")
+#Pairwise = Tajima's D I think, http://www.popgen.dk/angsd/index.php/Thetas,Tajima,Neutrality_tests#Example_Output, Example output
+
+#data$Pos <- as.character(data$Pos)
+#data <- subset(data, Pos >40000) #subset chromosome to get specific region of interest
+
+data_CW<- read.table(file= "CW_pernuc.txt", header = FALSE)
+colnames(data_CW) <- c("Chromo",	"Pos",	"Watterson",	"Pairwise",	"thetaSingleton",	"thetaH",	"thetaL")
+
+chr_o <- subset(data, Chromo == "MA_16601")
+chr <- subset(chr, Pos > 9000 & Pos < 10300)
+h <- which(chr_o$Pos == 10258)
+
+ggplot(chr, aes(x = Pos, y = Pairwise)) +
+  geom_line(alpha = 0.75) +
+  geom_point(data = chr[h, ], aes(Pos, Pairwise), colour = "red", size=5)
+  #geom_hline(yintercept = -10, color = "grey40", linetype = "dashed") 
+  
+
+#per site FST -> what regions to rerun the ANGSD for with -sites
+fst <- read.csv(file = "outlierFstSNPs_UTR.csv")
+hist(fst$WEIR_AND_COCKERHAM_FST)
+
+fst <- subset(fst, WEIR_AND_COCKERHAM_FST == 1)
+fst <- fst[c(-3,-4,-5)]
+fst$region_start <- fst$SNPstart - 10000
+fst$region_end <- fst$SNPstart + 10000
+
+chr_len <- read.delim(file = "Pabies1.0-genome_reduced_contigsizes.txt", header = FALSE)
+regs <- fst[!duplicated(fst$CHROM), ]
+colnames(chr_len) <- c("SNPchr", "LEN")
+new <- merge(fst, chr_len, by = "SNPchr")
+
+new$new_end <- pmin(new$region_end, new$LEN)
+new[new<0] <- 1
+
+final <- new[c(-2,-4,-5)]
+write.table(final, "region_totest.csv", sep = "\t", col.names=FALSE,row.names=FALSE, quote = FALSE)
+
+
+#sliding window
+win_HD <- read.delim(file = "HD_theta.thetasWindow.gz.pestPG", sep="\t")
+win_CW<- read.delim(file = "CW_theta.thetasWindow.gz.pestPG", sep="\t")
+
+chr_name <- "MA_10436974"
+snp <- 18067
+
+chr_HD <- subset(win_HD, Chr == chr_name)
+#chr <- subset(chr, Pos > 9000 & Pos < 10300)
+chr_HD <- na.omit(chr_HD)
+h_HD <- which(abs(chr_HD$WinCenter-snp)==min(abs(chr_HD$WinCenter-snp)))
+
+chr_CW <- subset(win_CW, Chr == chr_name)
+#chr <- subset(chr, Pos > 9000 & Pos < 10300)
+chr_CW <- na.omit(chr_CW)
+h_CW <- which(abs(chr_CW$WinCenter-snp)==min(abs(chr_CW$WinCenter-snp)))
+
+
+p <- ggplot(chr_CW, aes(x = WinCenter, y = tP)) +
+  #geom_point(alpha = 0.75) +
+  geom_line(alpha = 0.75, col="dodgerblue3") +
+  geom_point(data = chr_CW[h_CW, ], aes(WinCenter, tP), colour = "blue", size=5) +
+  geom_point(data = chr_HD[h_HD, ], aes(WinCenter, tP), colour = "red", size=5) +
+  geom_line(data = chr_HD, color = "tomato3")
+
+
+
+p + theme_bw() +  labs(title = "Sliding window nucleotide diversities along the chromosome",
+                       subtitle = "Pentatricopeptide repeat-containing At1g20230",
+                       x = "Position on the chromosome",
+                       y = "Tajima's D")
+
+summary(win_CW)
+``````
+
 #### Step 12. Check for functional enrichment for high Fst SNPs
+
+http://congenie.org/enrichment
 
 #### Step 13. Testing for selection at the per-SNP level using PCAngsd
 
