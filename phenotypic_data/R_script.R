@@ -172,19 +172,21 @@ summary(pdata.pr)
 plot(pdata.pr$x[,1],pdata.pr$x[,2], xlab="PC1 (77.4%)", ylab = "PC2 (16.2%)", main = "PC1 / PC2 - plot")
 
 library("factoextra")
-fviz_pca_ind(pdata.pr, geom.ind = "point", pointshape = 21, 
+p <- fviz_pca_ind(pdata.pr, geom.ind = "point", pointshape = 21, 
              pointsize = 2, 
              fill.ind = tpdata$Day, 
-             col.ind = "black", 
+             #col.ind = "black", 
              addEllipses = TRUE,
              label = "var",
-             col.var = "black",
+             col.ind = tpdata$Day,
              mean.point = FALSE,
              ellipse.level = 0.95,
              repel = TRUE,
-             legend.title = "Group") +
-  ggtitle("2D PCA-plot from 30 feature dataset") +
+             legend.title = "Day") +
   theme(plot.title = element_text(hjust = 0.5))
+
+p
+p + scale_color_manual(values=c("blue", "red"))
 
 #some more boxplots
 a=get_stats("needle_wt", "drought/heat_0")
